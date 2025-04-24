@@ -52,9 +52,9 @@
         const std = [0.2685, 0.2648, 0.2692];
 
         // 3. Normalize each channel separately
-        const normRed = redArray.map(v => ((v / 255.0) - mean[0]) / std[0]);
-        const normGreen = greenArray.map(v => ((v / 255.0) - mean[1]) / std[1]);
-        const normBlue = blueArray.map(v => ((v / 255.0) - mean[2]) / std[2]);
+        const normRed = r.map(v => ((v / 255.0) - mean[0]) / std[0]);
+        const normGreen = g.map(v => ((v / 255.0) - mean[1]) / std[1]);
+        const normBlue = b.map(v => ((v / 255.0) - mean[2]) / std[2]);
 
         // Then concatenate in channel-first order: [3, 64, 64]
         const transposedData = normRed.concat(normGreen).concat(normBlue);
