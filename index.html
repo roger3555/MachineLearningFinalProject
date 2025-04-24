@@ -39,50 +39,48 @@
     }
 
     function imageDataToTensor(image, dims) {
-      const data = image.bitmap.data;
-      const r = [], g = [], b = [];
+            // 1. Get buffer data from image and create R, G, and B arrays.
+            var imageBufferData = image.bitmap.data;
+            const [redArray, greenArray, blueArray] = new Array(new Array(), new Array(), new Array());
 
-      for (let i = 0; i < data.length; i += 4) {
-        r.push(data[i]);
-        g.push(data[i + 1]);
-        b.push(data[i + 2]);
-      }
+            // 2. Loop through the image buffer and extract the R, G, and B channels
+            for (let i = 0; i < imageBufferData.length; i += 4) {
+                redArray.push(imageBufferData[i]);
+                greenArray.push(imageBufferData[i + 1]);
+                blueArray.push(imageBufferData[i + 2]);
+                // skip data[i + 3] to filter out the alpha channel
+            }
 
-        // Example mean and std for each channel (replace with your actual values)
-        const mean = [0.5, 0.5, 0.5];
-        const std = [0.5, 0.5, 0.5];
+            // 3. Concatenate RGB to transpose [224, 224, 3] -> [3, 224, 224] to a number array
+            const transposedData = redArray.concat(greenArray).concat(blueArray);
 
-        // 3. Normalize each channel separately
-        const normRed = r.map(v => ((v / 255.0) - mean[0]) / std[0]);
-        const normGreen = g.map(v => ((v / 255.0) - mean[1]) / std[1]);
-        const normBlue = b.map(v => ((v / 255.0) - mean[2]) / std[2]);
-
-        // Then concatenate in channel-first order: [3, 64, 64]
-        const transposedData = normRed.concat(normGreen).concat(normBlue);
-
-        // 4. Convert to Float32Array
-        const float32Data = new Float32Array(transposedData.length);
-        for (let i = 0; i < transposedData.length; i++) {
-            float32Data[i] = transposedData[i];
+            // 4. convert to float32
+            let i, l = transposedData.length; // length, we need this for the loop
+            // create the Float32Array size 3 * 224 * 224 for these dimensions output
+            const float32Data = new Float32Array(dims[1] * dims[2] * dims[3]);
+            for (i = 0; i < l; i++) {
+                float32Data[i] = ((transposedData[i] / 255.0) - 0.5) / 0.5; // convert to float and normalize
+            }
+            // 5. create the tensor object from onnxruntime-web.
+            const inputTensor = new ort.Tensor("float32", float32Data, dims);
+            console.log(inputTensor)
+            return inputTensor;
         }
 
-        // 5. Create the tensor
-        const inputTensor = new ort.Tensor("float32", float32Data, dims);
-        console.log(inputTensor);
-        return inputTensor;
-    }
+        
+        async function loadImagefromPath(path, width = 64, height = 64) {
+            // Use Jimp to load the image and resize it.
+            var imageData = await Jimp.read(path).then((imageBuffer) => {
+                return imageBuffer.cover(width, height);
+            });
 
-    async function loadImagefromPath(path, width = 64, height = 64) {
-      try {
-        const image = await Jimp.read(path);
-        image.cover(width, height);
-        return image;
-      } catch (err) {
-        console.error("Error loading image:", err);
-        statusoutput.textContent = "Error loading image file. Please try another image.";
-        throw err;
-      }
-    }
+            return imageData;
+        }
+
+        const isTypedArray = (function() {
+            const TypedArray = Object.getPrototypeOf(Uint8Array);
+            return (obj) => obj instanceof TypedArray;
+        })();
 
     function sortedClasses(classProbabilities) {
       const probs = Array.from(classProbabilities);
