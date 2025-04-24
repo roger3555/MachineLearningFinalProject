@@ -72,7 +72,15 @@
     }
 
     async function loadImagefromPath(path, width = 64, height = 64) {
-      return await Jimp.read(path).then(image => image.cover(width, height));
+      try {
+        const image = await Jimp.read(path);
+        image.cover(width, height);
+        return image;
+      } catch (err) {
+        console.error("Error loading image:", err);
+        statusoutput.textContent = "Error loading image file. Please try another image.";
+        throw err;
+      }
     }
 
     function sortedClasses(classProbabilities) {
