@@ -38,6 +38,15 @@
       return imageDataToTensor(image, dims);
     }
 
+    async function loadImagefromPath(path, width = 64, height = 64) {
+            // Use Jimp to load the image and resize it.
+            var imageData = await Jimp.read(path).then((imageBuffer) => {
+                return imageBuffer.cover(width, height);
+            });
+
+            return imageData;
+        }
+
     function imageDataToTensor(image, dims) {
           const imageBufferData = image.bitmap.data;
           const [batch, channels, height, width] = dims;
@@ -59,15 +68,7 @@
           console.log(inputTensor);
           return inputTensor;
         }
-        
-        async function loadImagefromPath(path, width = 64, height = 64) {
-            // Use Jimp to load the image and resize it.
-            var imageData = await Jimp.read(path).then((imageBuffer) => {
-                return imageBuffer.cover(width, height);
-            });
-
-            return imageData;
-        }
+      
 
         const isTypedArray = (function() {
             const TypedArray = Object.getPrototypeOf(Uint8Array);
