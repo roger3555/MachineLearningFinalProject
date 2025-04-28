@@ -58,10 +58,7 @@ data_train_tensor = torch.stack( dataset_train )
 targets_train = torch.Tensor(  targets_train  ).type(   torch.LongTensor   )
 
 # Calculate mean and standard deviation per channel
-mean = data_train_tensor.mean(dim=[0, 2, 3])
-std = data_train_tensor.std(dim=[0, 2, 3])
-print(f"Mean: ", mean)
-print(f"STD: ", std)
+
 
 
 
@@ -70,7 +67,7 @@ normalized_train_transform = transforms.Compose([
     transforms.ToPILImage(),
     transforms.Resize((64, 64)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
 # Reprocess the training images using normalization
@@ -111,7 +108,7 @@ test_transform = transforms.Compose([
     transforms.ToPILImage(),
     transforms.Resize((64, 64)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 # Load from folders
 for folder in os.listdir(raw_data_test):
